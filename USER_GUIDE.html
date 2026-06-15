@@ -1,0 +1,522 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>MailBlast — User Guide</title>
+  <style>
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+      background: #f1f5f9;
+      color: #1e293b;
+      line-height: 1.7;
+    }
+
+    /* Header */
+    .header {
+      background: linear-gradient(135deg, #1e3a8a 0%, #2563eb 100%);
+      color: #fff;
+      padding: 40px 24px;
+      text-align: center;
+    }
+    .header h1 { font-size: 32px; font-weight: 800; letter-spacing: -0.5px; }
+    .header p  { font-size: 15px; opacity: 0.8; margin-top: 6px; }
+    .header a  {
+      display: inline-block;
+      margin-top: 16px;
+      background: #fff;
+      color: #2563eb;
+      padding: 9px 24px;
+      border-radius: 8px;
+      font-weight: 700;
+      font-size: 14px;
+      text-decoration: none;
+      transition: opacity 0.15s;
+    }
+    .header a:hover { opacity: 0.85; }
+
+    /* Layout */
+    .container {
+      max-width: 780px;
+      margin: 36px auto;
+      padding: 0 16px 60px;
+      display: flex;
+      flex-direction: column;
+      gap: 24px;
+    }
+
+    /* Card */
+    .card {
+      background: #fff;
+      border-radius: 14px;
+      border: 1px solid #e2e8f0;
+      box-shadow: 0 2px 8px rgba(0,0,0,.06);
+      overflow: hidden;
+    }
+    .card-head {
+      padding: 18px 24px 14px;
+      border-bottom: 1px solid #f1f5f9;
+      display: flex;
+      align-items: center;
+      gap: 10px;
+    }
+    .card-head .icon {
+      width: 36px; height: 36px;
+      border-radius: 9px;
+      display: flex; align-items: center; justify-content: center;
+      font-size: 18px;
+      flex-shrink: 0;
+    }
+    .icon-blue   { background: #dbeafe; }
+    .icon-green  { background: #d1fae5; }
+    .icon-purple { background: #ede9fe; }
+    .icon-orange { background: #ffedd5; }
+    .icon-teal   { background: #ccfbf1; }
+
+    .card-head h2 { font-size: 17px; font-weight: 700; }
+    .card-body { padding: 20px 24px; }
+
+    /* Step badge */
+    .step-badge {
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      background: #2563eb;
+      color: #fff;
+      font-size: 11px;
+      font-weight: 700;
+      padding: 3px 10px;
+      border-radius: 999px;
+      letter-spacing: .4px;
+      text-transform: uppercase;
+      margin-bottom: 10px;
+    }
+
+    /* Video link */
+    .video-link {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      background: #fef9c3;
+      border: 1px solid #fde047;
+      border-radius: 10px;
+      padding: 12px 16px;
+      margin-bottom: 16px;
+      text-decoration: none;
+      color: #713f12;
+      font-weight: 600;
+      font-size: 14px;
+      transition: background 0.15s;
+    }
+    .video-link:hover { background: #fef08a; }
+    .video-link .play {
+      width: 36px; height: 36px;
+      background: #ef4444;
+      border-radius: 8px;
+      display: flex; align-items: center; justify-content: center;
+      color: #fff;
+      font-size: 14px;
+      flex-shrink: 0;
+    }
+
+    /* Numbered steps */
+    .steps { display: flex; flex-direction: column; gap: 10px; }
+    .step-item {
+      display: flex;
+      align-items: flex-start;
+      gap: 12px;
+    }
+    .step-num {
+      width: 26px; height: 26px;
+      background: #2563eb;
+      color: #fff;
+      border-radius: 50%;
+      font-size: 13px;
+      font-weight: 700;
+      display: flex; align-items: center; justify-content: center;
+      flex-shrink: 0;
+      margin-top: 1px;
+    }
+    .step-item p { font-size: 14px; }
+
+    /* Table */
+    table {
+      width: 100%;
+      border-collapse: collapse;
+      font-size: 13.5px;
+      margin-top: 4px;
+    }
+    th {
+      background: #f8fafc;
+      padding: 9px 14px;
+      text-align: left;
+      font-weight: 700;
+      color: #64748b;
+      font-size: 12px;
+      text-transform: uppercase;
+      letter-spacing: .5px;
+      border-bottom: 1px solid #e2e8f0;
+    }
+    td {
+      padding: 10px 14px;
+      border-bottom: 1px solid #f1f5f9;
+      vertical-align: top;
+    }
+    tr:last-child td { border-bottom: none; }
+    tr:hover td { background: #f8fafc; }
+    td:first-child { font-weight: 600; white-space: nowrap; }
+    .optional { color: #94a3b8; font-weight: 400; font-size: 12px; }
+
+    /* Code block */
+    .code-block {
+      background: #0f172a;
+      color: #e2e8f0;
+      border-radius: 10px;
+      padding: 16px 20px;
+      font-family: 'Courier New', Courier, monospace;
+      font-size: 13.5px;
+      line-height: 1.8;
+      margin-top: 4px;
+    }
+    .code-block .highlight { color: #34d399; font-weight: 700; }
+
+    /* Excel preview */
+    .excel-preview {
+      border: 1px solid #9ca3af;
+      border-radius: 8px;
+      overflow: hidden;
+      font-family: 'Segoe UI', Arial, sans-serif;
+      font-size: 12.5px;
+      margin-bottom: 14px;
+    }
+    .excel-title {
+      background: linear-gradient(180deg, #217346, #1a5c38);
+      color: #fff;
+      padding: 6px 12px;
+      font-size: 12px;
+      font-weight: 600;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+    .excel-dots { display: flex; gap: 5px; }
+    .excel-dot { width: 10px; height: 10px; border-radius: 50%; }
+    .excel-table { width: 100%; border-collapse: collapse; }
+    .excel-table .col-hdr {
+      background: #f3f4f6;
+      text-align: center;
+      padding: 4px;
+      color: #6b7280;
+      font-size: 11px;
+      font-weight: 700;
+      border: 1px solid #e5e7eb;
+      width: 30px;
+    }
+    .excel-table .row-num {
+      background: #f3f4f6;
+      text-align: center;
+      padding: 4px 6px;
+      color: #6b7280;
+      font-size: 11px;
+      border: 1px solid #e5e7eb;
+      width: 28px;
+    }
+    .excel-table td.hdr-cell {
+      background: #217346;
+      color: #fff;
+      font-weight: 700;
+      padding: 6px 12px;
+      border: 1px solid #1a5c38;
+    }
+    .excel-table td.data-cell {
+      padding: 5px 12px;
+      border: 1px solid #e5e7eb;
+    }
+    .excel-table td.email-cell {
+      color: #1d4ed8;
+      padding: 5px 12px;
+      border: 1px solid #e5e7eb;
+    }
+    .excel-table tr:nth-child(even) td.data-cell,
+    .excel-table tr:nth-child(even) td.email-cell { background: #f9fafb; }
+
+    /* Bullet list */
+    .bullet-list { display: flex; flex-direction: column; gap: 8px; margin-top: 4px; }
+    .bullet-item {
+      display: flex;
+      align-items: flex-start;
+      gap: 10px;
+      font-size: 14px;
+    }
+    .tick  { color: #10b981; font-weight: 700; flex-shrink: 0; margin-top: 1px; }
+    .cross { color: #ef4444; font-weight: 700; flex-shrink: 0; margin-top: 1px; }
+
+    /* Tips */
+    .tips-grid {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 12px;
+    }
+    @media (max-width: 560px) { .tips-grid { grid-template-columns: 1fr; } }
+    .tip {
+      background: #f8fafc;
+      border: 1px solid #e2e8f0;
+      border-radius: 10px;
+      padding: 14px 16px;
+      display: flex;
+      gap: 10px;
+      align-items: flex-start;
+      font-size: 13.5px;
+    }
+    .tip-icon { font-size: 20px; flex-shrink: 0; line-height: 1.3; }
+
+    /* CTA button */
+    .cta {
+      text-align: center;
+      padding: 28px 24px;
+    }
+    .cta a {
+      display: inline-block;
+      background: #2563eb;
+      color: #fff;
+      padding: 13px 36px;
+      border-radius: 10px;
+      font-size: 16px;
+      font-weight: 700;
+      text-decoration: none;
+      box-shadow: 0 4px 14px rgba(37,99,235,.35);
+      transition: background 0.15s;
+    }
+    .cta a:hover { background: #1d4ed8; }
+    .cta p { margin-top: 10px; font-size: 12px; color: #94a3b8; }
+  </style>
+</head>
+<body>
+
+  <!-- Header -->
+  <div class="header">
+    <h1>✉ MailBlast</h1>
+    <p>Automated Email Campaign Manager</p>
+    <a href="https://automation-mail.vercel.app" target="_blank">Open App →</a>
+  </div>
+
+  <div class="container">
+
+    <!-- Before You Start -->
+    <div class="card">
+      <div class="card-head">
+        <div class="icon icon-orange">🔑</div>
+        <h2>Before You Start — Gmail App Password</h2>
+      </div>
+      <div class="card-body">
+        <p style="font-size:14px;margin-bottom:14px;">Regular Gmail passwords will <strong>not</strong> work. You must generate an <strong>App Password</strong>.</p>
+
+        <a class="video-link" href="https://youtu.be/ckfyTVgF1T4?si=bD70o6VUHaOfFf5k" target="_blank" rel="noopener noreferrer">
+          <div class="play">▶</div>
+          <div>
+            <div>Watch: How to generate a Gmail App Password</div>
+            <div style="font-size:12px;font-weight:400;margin-top:2px;opacity:.7;">youtu.be/ckfyTVgF1T4</div>
+          </div>
+        </a>
+
+        <div class="steps">
+          <div class="step-item">
+            <div class="step-num">1</div>
+            <p>Go to <strong>Google Account → Security</strong> and enable <strong>2-Step Verification</strong></p>
+          </div>
+          <div class="step-item">
+            <div class="step-num">2</div>
+            <p>Search <strong>"App Passwords"</strong> in your Google Account settings</p>
+          </div>
+          <div class="step-item">
+            <div class="step-num">3</div>
+            <p>Create a new App Password → copy the <strong>16-character password</strong> and use it in the app</p>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Step 1 -->
+    <div class="card">
+      <div class="card-head">
+        <div class="icon icon-blue">⚙️</div>
+        <h2>Step 1 — Configure</h2>
+      </div>
+      <div class="card-body">
+        <div class="step-badge">Step 1 of 3</div>
+        <table>
+          <thead>
+            <tr>
+              <th>Field</th>
+              <th>What to enter</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr>
+              <td>Gmail Address</td>
+              <td>Your Gmail (e.g. you@gmail.com)</td>
+            </tr>
+            <tr>
+              <td>App Password</td>
+              <td>The 16-character password from above</td>
+            </tr>
+            <tr>
+              <td>Subject</td>
+              <td>Your email subject line</td>
+            </tr>
+            <tr>
+              <td>Body Template</td>
+              <td>Your message — use <code style="background:#f1f5f9;padding:1px 5px;border-radius:3px;font-size:12px;">{{name}}</code> where you want the recipient's name</td>
+            </tr>
+            <tr>
+              <td>Excel File</td>
+              <td>Upload your recipients <code style="background:#f1f5f9;padding:1px 5px;border-radius:3px;font-size:12px;">.xlsx</code> file</td>
+            </tr>
+            <tr>
+              <td>PDF Attachment <span class="optional">(optional)</span></td>
+              <td>Any PDF up to 3 MB — attached to every email</td>
+            </tr>
+          </tbody>
+        </table>
+        <p style="margin-top:14px;font-size:13.5px;">Click <strong>Preview Recipients →</strong> when ready.</p>
+      </div>
+    </div>
+
+    <!-- Step 2 -->
+    <div class="card">
+      <div class="card-head">
+        <div class="icon icon-purple">👁️</div>
+        <h2>Step 2 — Preview</h2>
+      </div>
+      <div class="card-body">
+        <div class="step-badge">Step 2 of 3</div>
+        <p style="font-size:14px;">Review the full list of recipients parsed from your Excel file. Confirm the attachment (if any), then click <strong>Send Emails</strong> to begin.</p>
+      </div>
+    </div>
+
+    <!-- Step 3 -->
+    <div class="card">
+      <div class="card-head">
+        <div class="icon icon-green">📤</div>
+        <h2>Step 3 — Send</h2>
+      </div>
+      <div class="card-body">
+        <div class="step-badge">Step 3 of 3</div>
+        <p style="font-size:14px;margin-bottom:12px;">Emails go out <strong>one by one</strong> with a <strong>9-second gap</strong> between each. The dashboard shows live progress:</p>
+        <div class="bullet-list">
+          <div class="bullet-item"><span class="tick">✓</span><span>Total / Sent / Failed / Pending counters update in real time</span></div>
+          <div class="bullet-item"><span class="tick">✓</span><span>Countdown timer shows seconds until the next email</span></div>
+          <div class="bullet-item"><span class="tick">✓</span><span>Activity log records every success and failure</span></div>
+          <div class="bullet-item"><span class="tick">✓</span><span>Hit <strong>Stop Sending</strong> anytime to cancel mid-campaign</span></div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Excel Format -->
+    <div class="card">
+      <div class="card-head">
+        <div class="icon icon-green">📊</div>
+        <h2>Excel File Format</h2>
+      </div>
+      <div class="card-body">
+        <div class="excel-preview">
+          <div class="excel-title">
+            <div class="excel-dots">
+              <div class="excel-dot" style="background:#ff5f57"></div>
+              <div class="excel-dot" style="background:#ffbd2e"></div>
+              <div class="excel-dot" style="background:#28c840"></div>
+            </div>
+            recipients.xlsx
+          </div>
+          <table class="excel-table">
+            <thead>
+              <tr>
+                <td class="col-hdr"></td>
+                <td class="col-hdr">A</td>
+                <td class="col-hdr">B</td>
+              </tr>
+            </thead>
+            <tbody>
+              <tr>
+                <td class="row-num">1</td>
+                <td class="hdr-cell">Name</td>
+                <td class="hdr-cell">Email</td>
+              </tr>
+              <tr>
+                <td class="row-num">2</td>
+                <td class="data-cell">John Doe</td>
+                <td class="email-cell">john.doe@example.com</td>
+              </tr>
+              <tr>
+                <td class="row-num">3</td>
+                <td class="data-cell">Jane Smith</td>
+                <td class="email-cell">jane.smith@example.com</td>
+              </tr>
+              <tr>
+                <td class="row-num">4</td>
+                <td class="data-cell">Alice Johnson</td>
+                <td class="email-cell">alice.j@example.com</td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+        <div class="bullet-list">
+          <div class="bullet-item"><span class="tick">✓</span><span>First row must be the header: <strong>Name</strong>, <strong>Email</strong></span></div>
+          <div class="bullet-item"><span class="tick">✓</span><span>One recipient per row, saved as <code style="background:#f1f5f9;padding:1px 5px;border-radius:3px;font-size:12px;">.xlsx</code></span></div>
+          <div class="bullet-item"><span class="tick">✓</span><span>Column order doesn't matter — headers are detected automatically</span></div>
+          <div class="bullet-item"><span class="cross">✗</span><span>Rows with missing or invalid emails are skipped automatically</span></div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Body Template -->
+    <div class="card">
+      <div class="card-head">
+        <div class="icon icon-teal">✏️</div>
+        <h2>Body Template Example</h2>
+      </div>
+      <div class="card-body">
+        <div class="code-block">Hello <span class="highlight">{{name}}</span>,<br><br>Please find the attached document.<br><br>Regards,<br>Admin Team</div>
+        <p style="margin-top:12px;font-size:13.5px;color:#64748b;"><code style="background:#f1f5f9;padding:1px 6px;border-radius:3px;">{{name}}</code> is automatically replaced with each recipient's name from the Excel file.</p>
+      </div>
+    </div>
+
+    <!-- Tips -->
+    <div class="card">
+      <div class="card-head">
+        <div class="icon icon-orange">💡</div>
+        <h2>Tips</h2>
+      </div>
+      <div class="card-body">
+        <div class="tips-grid">
+          <div class="tip">
+            <div class="tip-icon">🔑</div>
+            <div>Always use an <strong>App Password</strong> — regular Gmail password won't work</div>
+          </div>
+          <div class="tip">
+            <div class="tip-icon">📎</div>
+            <div>Keep PDF attachments under <strong>3 MB</strong> to stay within Vercel limits</div>
+          </div>
+          <div class="tip">
+            <div class="tip-icon">🔒</div>
+            <div>Credentials are <strong>never stored</strong> — used only for the current session</div>
+          </div>
+          <div class="tip">
+            <div class="tip-icon">⏱️</div>
+            <div>9-second delay between emails keeps your account safe from Gmail rate limits</div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- CTA -->
+    <div class="card cta">
+      <a href="https://automation-mail.vercel.app" target="_blank">Launch MailBlast →</a>
+      <p>https://automation-mail.vercel.app</p>
+    </div>
+
+  </div>
+</body>
+</html>
