@@ -172,10 +172,10 @@ export default function App() {
         addLog('error', `Failed for ${name} <${email}>: ${msg}`);
       }
 
-      // 15-second countdown between emails (skip after the last one)
+      // 9-second countdown between emails (skip after the last one)
       if (i < recipients.length - 1 && !cancelRef.current) {
-        addLog('info', 'Waiting 15 seconds before next email…');
-        for (let sec = 15; sec > 0; sec--) {
+        addLog('info', 'Waiting 9 seconds before next email…');
+        for (let sec = 9; sec > 0; sec--) {
           if (cancelRef.current) break;
           setSendState(prev => ({ ...prev, countdown: sec, currentEmail: null }));
           await sleep(1000);
@@ -296,8 +296,8 @@ export default function App() {
             </div>
 
             <div className="timing-note">
-              &#8987;&nbsp; Emails will be sent with a <strong>15-second delay</strong> between each one.
-              Estimated time: ~{Math.ceil((recipients.length - 1) * 15 / 60)} min.
+              &#8987;&nbsp; Emails will be sent with a <strong>9-second delay</strong> between each one.
+              Estimated time: ~{Math.ceil((recipients.length - 1) * 9 / 60)} min.
             </div>
 
             <div className="preview-actions">
