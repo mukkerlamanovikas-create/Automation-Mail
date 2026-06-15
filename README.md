@@ -1,6 +1,79 @@
 # MailBlast — Email Campaign Manager
 
-A full-stack email automation app. Upload an Excel file of recipients, write a template with `{{name}}` placeholders, attach an optional PDF, and send personalised emails via Gmail SMTP with a 15-second delay between each send.
+**Live App:** https://automation-mail.vercel.app
+
+A full-stack email automation app. Upload an Excel file of recipients, write a template with `{{name}}` placeholders, attach an optional PDF, and send personalised emails via Gmail SMTP with a 9-second delay between each send.
+
+---
+
+## How to Use
+
+### Before You Start — Gmail App Password
+
+Regular Gmail passwords will not work. You need an **App Password**.
+
+> 📺 **Video Guide:** [How to generate a Gmail App Password](https://youtu.be/ckfyTVgF1T4?si=bD70o6VUHaOfFf5k)
+
+1. Google Account → **Security** → enable **2-Step Verification**
+2. Search **"App Passwords"** in your Google Account
+3. Create one → copy the **16-character password**
+
+---
+
+### Step 1 — Configure
+
+| Field | What to enter |
+|---|---|
+| **Gmail Address** | Your Gmail (e.g. you@gmail.com) |
+| **App Password** | The 16-character password from above |
+| **Subject** | Your email subject line |
+| **Body Template** | Your message — use `{{name}}` where you want the recipient's name |
+| **Excel File** | Upload your recipients `.xlsx` file |
+| **PDF Attachment** | Optional — any PDF up to 3 MB |
+
+Click **Preview Recipients →**
+
+### Step 2 — Preview
+
+Review the recipient list parsed from your Excel file, then click **Send Emails**.
+
+### Step 3 — Send
+
+Emails go out one by one with a **9-second gap** between each. Watch live progress (Sent / Failed / countdown) in the dashboard. Hit **Stop Sending** anytime to cancel.
+
+---
+
+### Prepare Your Excel File
+
+| Name       | Email              |
+|------------|--------------------|
+| John Doe   | john@example.com   |
+| Jane Smith | jane@example.com   |
+
+- First row must be the header: **Name**, **Email**
+- One recipient per row, saved as `.xlsx`
+- Rows with missing or invalid emails are skipped automatically
+
+### Body Template Example
+
+```
+Hello {{name}},
+
+Please find the attached document.
+
+Regards,
+Admin Team
+```
+
+`{{name}}` is replaced with each recipient's name automatically.
+
+---
+
+### Tips
+
+- Always use an **App Password** — regular Gmail password won't work
+- Keep PDF attachments under **3 MB**
+- Credentials are **never stored** — used only for the current session
 
 ## Project Structure
 
@@ -174,7 +247,7 @@ Admin Team
 |---|---|
 | PDF size | Max ~3 MB (Vercel free tier: 4.5 MB request body limit) |
 | Function timeout | 10 s on Vercel hobby plan — safe because each call sends 1 email |
-| Gmail sending rate | Gmail limits bulk sending; the 15 s delay helps stay under limits |
+| Gmail sending rate | Gmail limits bulk sending; the 9 s delay helps stay under limits |
 | CORS | Backend allows `*` by default — restrict to your frontend domain in production |
 
 ---
@@ -185,4 +258,3 @@ Admin Team
 - Use App Passwords — not your Google account password
 - Consider restricting `Access-Control-Allow-Origin` in `backend/api/send-email.js` to your frontend domain in production
 - PDF base64 data is held in browser memory only for the duration of the session
->>>>>>> ea872c3 (feat: initial release of MailBlast email automation app)
