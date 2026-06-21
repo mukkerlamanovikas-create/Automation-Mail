@@ -10,6 +10,7 @@ frontend/.vite/
 # Environment files
 .env
 frontend/.env
+frontend/.env.local
 backend/.env
 
 # OS / editor

@@ -4,11 +4,24 @@
   "outputDirectory": "frontend/dist",
   "installCommand": "npm install",
   "functions": {
-    "api/**/*.js": {
-      "maxDuration": 30
+    "api/index.js": {
+      "maxDuration": 300
     }
   },
+  "crons": [
+    {
+      "path": "/api/worker/process",
+      "schedule": "0 * * * *"
+    }
+  ],
   "rewrites": [
-    { "source": "/((?!api/).*)", "destination": "/index.html" }
+    {
+      "source": "/api/(.*)",
+      "destination": "/api/index.js"
+    },
+    {
+      "source": "/((?!api/).*)",
+      "destination": "/index.html"
+    }
   ]
 }
