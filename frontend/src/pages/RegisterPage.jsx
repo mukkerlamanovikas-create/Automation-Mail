@@ -1,11 +1,10 @@
 import { useState } from 'react';
-import { useNavigate, Link } from 'react-router-dom';
+import { Link } from 'react-router-dom';
 import client from '../api/client';
 import { useAuthStore } from '../store/auth';
 import Spinner from '../components/ui/Spinner';
 
 export default function RegisterPage() {
-  const navigate = useNavigate();
   const login = useAuthStore(s => s.login);
   const [form, setForm] = useState({ email: '', password: '', confirm: '' });
   const [loading, setLoading] = useState(false);
@@ -22,7 +21,7 @@ export default function RegisterPage() {
     try {
       const r = await client.post('/api/auth/register', { email: form.email, password: form.password });
       login(r.data.token, r.data.user);
-      navigate('/');
+      window.location.href = '/';
     } catch (error) {
       setErr(error.response?.data?.error || 'Registration failed');
     } finally {

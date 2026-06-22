@@ -1,11 +1,10 @@
 import { useState } from 'react';
-import { useNavigate, Link } from 'react-router-dom';
+import { Link } from 'react-router-dom';
 import client from '../api/client';
 import { useAuthStore } from '../store/auth';
 import Spinner from '../components/ui/Spinner';
 
 export default function LoginPage() {
-  const navigate = useNavigate();
   const login = useAuthStore(s => s.login);
   const [form, setForm] = useState({ email: '', password: '' });
   const [loading, setLoading] = useState(false);
@@ -20,7 +19,7 @@ export default function LoginPage() {
     try {
       const r = await client.post('/api/auth/login', form);
       login(r.data.token, r.data.user);
-      navigate('/');
+      window.location.href = '/';
     } catch (error) {
       setErr(error.response?.data?.error || 'Login failed');
     } finally {

@@ -46,7 +46,12 @@ export default function DashboardPage() {
   };
 
   if (loading) return <div style={{ textAlign: 'center', padding: 80 }}><Spinner size="lg" /></div>;
-  if (!data) return null;
+  if (!data) return (
+    <div style={{ textAlign: 'center', padding: 80, color: 'var(--text-muted)' }}>
+      <p>Failed to load dashboard. Check your connection or server configuration.</p>
+      <button className="btn btn-secondary" style={{ marginTop: 16 }} onClick={load}>Retry</button>
+    </div>
+  );
 
   return (
     <div>
