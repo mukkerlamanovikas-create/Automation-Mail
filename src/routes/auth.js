@@ -8,6 +8,31 @@ const { requireAuth } = require('../middleware/auth');
 
 const router = express.Router();
 
+// POST /api/auth/register
+router.post('/register', async (req, res, next) => {
+  try {
+    const { email, password } = req.body;
+    if (!email || !password) return res.status(400).json({ success: false, error: 'Email and password are required' });
+    if (password.length < 8) return res.status(400).json({ success: false, error: 'Password must be at least 8 characters' });
+
+    const sql = getDb();
+    const existing = await sql`SELECT id FROM users WHERE email = ${email.toLowerCase().trim()} LIMIT 1`;
+    if (existing[0]) return res.status(409).json({ success: false, error: 'An account with this email already exists' });
+
+    const hash = await bcrypt.hash(password, 10);
+    const rows = await sql`INSERT INTO users (email, password_hash) VALUES (${email.toLowerCase().trim()}, ${hash}) RETURNING id, email`;
+    const user = rows[0];
+
+    const token = jwt.sign(
+      { id: user.id, email: user.email },
+      process.env.JWT_SECRET,
+      { expiresIn: '1h' }
+    );
+
+    res.status(201).json({ success: true, token, user: { id: user.id, email: user.email } });
+  } catch (err) { next(err); }
+});
+
 // POST /api/auth/login
 router.post('/login', async (req, res, next) => {
   try {
