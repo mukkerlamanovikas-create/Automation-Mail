@@ -1,4 +1,5 @@
 import { useState, useEffect, useCallback } from 'react';
+import { Link } from 'react-router-dom';
 import client from '../api/client';
 import CampaignRow from '../components/campaigns/CampaignRow';
 import Spinner from '../components/ui/Spinner';
@@ -60,7 +61,7 @@ export default function CampaignHistoryPage() {
             <div className="empty-state-icon">📋</div>
             <div className="empty-state-text">No campaigns yet</div>
             <div className="empty-state-sub">Launch your first campaign to see it here.</div>
-            <a href="/campaigns/new" className="btn btn-primary" style={{ marginTop: 16, display: 'inline-flex' }}>New Campaign</a>
+            <Link to="/campaigns/new" className="btn btn-primary" style={{ marginTop: 16, display: 'inline-flex' }}>New Campaign</Link>
           </div>
         ) : (
           <div className="card" style={{ overflow: 'auto' }}>

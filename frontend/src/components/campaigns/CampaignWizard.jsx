@@ -1,5 +1,5 @@
 import { useState } from 'react';
-import { useNavigate } from 'react-router-dom';
+import { useNavigate, Link } from 'react-router-dom';
 import RecipientUploader from './RecipientUploader';
 import Spinner from '../ui/Spinner';
 import client from '../../api/client';
@@ -79,7 +79,7 @@ export default function CampaignWizard({ gmailAccounts, templates, preSelectedTe
             <div className="form-group">
               <label>Gmail Account</label>
               {gmailAccounts.length === 0 ? (
-                <p className="err-msg">No Gmail accounts added. <a href="/gmail-accounts">Add one first</a>.</p>
+                <p className="err-msg">No Gmail accounts added. <Link to="/gmail-accounts">Add one first</Link>.</p>
               ) : (
                 <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(220px, 1fr))', gap: 10 }}>
                   {gmailAccounts.map(a => (
@@ -105,7 +105,7 @@ export default function CampaignWizard({ gmailAccounts, templates, preSelectedTe
           <div>
             <p style={{ fontSize: 13, color: 'var(--text-muted)', marginBottom: 16 }}>Click a template to select it.</p>
             {templates.length === 0 ? (
-              <p className="err-msg">No templates yet. <a href="/templates">Create one first</a>.</p>
+              <p className="err-msg">No templates yet. <Link to="/templates">Create one first</Link>.</p>
             ) : (
               <div className="templates-grid">
                 {templates.map(t => (

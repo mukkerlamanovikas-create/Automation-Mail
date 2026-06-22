@@ -1,11 +1,13 @@
 import { useState } from 'react';
-import { Link } from 'react-router-dom';
+import { Link, useLocation } from 'react-router-dom';
 import client from '../api/client';
 import { useAuthStore } from '../store/auth';
 import Spinner from '../components/ui/Spinner';
 
 export default function LoginPage() {
   const login = useAuthStore(s => s.login);
+  const location = useLocation();
+  const successMsg = location.state?.msg || '';
   const [form, setForm] = useState({ email: '', password: '' });
   const [loading, setLoading] = useState(false);
   const [err, setErr] = useState('');
@@ -45,6 +47,7 @@ export default function LoginPage() {
               <label>Password</label>
               <input type="password" value={form.password} onChange={set('password')} placeholder="••••••••" />
             </div>
+            {successMsg && <p style={{ color: 'var(--success)', fontSize: 13, textAlign: 'center' }}>{successMsg}</p>}
             {err && <p className="err-msg">{err}</p>}
             <button type="submit" className="btn btn-primary btn-lg" disabled={loading}>
               {loading ? <><Spinner size="sm" /> Signing in…</> : 'Sign In'}
