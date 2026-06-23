@@ -10,6 +10,7 @@ export default function CampaignHistoryPage() {
   const [loading, setLoading] = useState(true);
 
   const load = useCallback(async () => {
+    setLoading(true);
     try {
       const r = await client.get('/api/campaigns');
       setCampaigns(r.data.data);

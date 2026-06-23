@@ -14,6 +14,7 @@ export default function GmailAccountsPage() {
   const [deleteTarget, setDeleteTarget] = useState(null);
 
   const load = useCallback(async () => {
+    setLoading(true);
     try {
       const r = await client.get('/api/gmail-accounts');
       setAccounts(r.data.data);

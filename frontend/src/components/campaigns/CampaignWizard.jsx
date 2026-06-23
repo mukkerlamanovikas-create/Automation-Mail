@@ -12,7 +12,7 @@ export default function CampaignWizard({ gmailAccounts, templates, preSelectedTe
   const navigate = useNavigate();
   const [step, setStep] = useState(0);
   const [name, setName] = useState('');
-  const [gmailId, setGmailId] = useState(preSelectedTemplateId ? null : (gmailAccounts[0]?.id || null));
+  const [gmailId, setGmailId] = useState(gmailAccounts[0]?.id || null);
   const [templateId, setTemplateId] = useState(
     preSelectedTemplateId ? parseInt(preSelectedTemplateId) : (templates.find(t => t.is_default)?.id || templates[0]?.id || null)
   );

@@ -17,6 +17,7 @@ export default function TemplatesPage() {
   const [deleteTarget, setDeleteTarget] = useState(null);
 
   const load = useCallback(async () => {
+    setLoading(true);
     try {
       const r = await client.get('/api/templates');
       setTemplates(r.data.data);
@@ -33,10 +34,10 @@ export default function TemplatesPage() {
   const openEdit = t => { setEditing(t); setFormOpen(true); };
 
   const openPreview = async t => {
-    setPreviewing(t);
     try {
       const r = await client.get(`/api/templates/${t.id}`);
       setPreviewData(r.data.data);
+      setPreviewing(t);
     } catch {
       toast.error('Failed to load template');
     }
