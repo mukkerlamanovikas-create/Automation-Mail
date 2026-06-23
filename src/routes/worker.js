@@ -95,7 +95,7 @@ async function processQueue(req, res) {
     // Load Gmail credentials (cached per account for this run)
     if (!credCache.has(row.gmail_account_id)) {
       const [acct] = await sql`
-        SELECT email, encrypted_password, iv, auth_tag
+        SELECT email, label, encrypted_password, iv, auth_tag
         FROM gmail_accounts WHERE id = ${row.gmail_account_id}
       `;
       if (!acct) {
@@ -104,7 +104,7 @@ async function processQueue(req, res) {
       }
       try {
         const gmailPassword = decrypt({ ciphertext: acct.encrypted_password, iv: acct.iv, authTag: acct.auth_tag });
-        credCache.set(row.gmail_account_id, { gmailEmail: acct.email, gmailPassword });
+        credCache.set(row.gmail_account_id, { gmailEmail: acct.email, gmailLabel: acct.label, gmailPassword });
         transporterCache.set(row.gmail_account_id, createTransporter(acct.email, gmailPassword));
       } catch {
         await sql`UPDATE campaign_recipients SET status = 'pending' WHERE id = ${row.recipient_id}`;
@@ -125,17 +125,18 @@ async function processQueue(req, res) {
       tmplCache.set(row.template_id, {
         subject: tmpl.subject,
         body: tmpl.body,
-        pdfBuffer: tmpl.pdf_data ? Buffer.from(tmpl.pdf_data) : null,
+        pdfBuffer: tmpl.pdf_data || null,
         pdfFilename: tmpl.pdf_filename,
       });
     }
 
-    const { gmailEmail, gmailPassword } = credCache.get(row.gmail_account_id);
+    const { gmailEmail, gmailLabel, gmailPassword } = credCache.get(row.gmail_account_id);
     const { subject, body, pdfBuffer, pdfFilename } = tmplCache.get(row.template_id);
 
     try {
       await sendMail({
         fromEmail: gmailEmail,
+        fromLabel: gmailLabel,
         fromPassword: gmailPassword,
         to: row.email,
         toName: row.name,

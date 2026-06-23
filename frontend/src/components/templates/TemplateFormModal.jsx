@@ -111,14 +111,14 @@ export default function TemplateFormModal({ isOpen, onClose, onSaved, template }
                     <span className="field-hint">Use {'{{name}}'} and {'{{email}}'} as placeholders</span>
                   </div>
                   <div className="form-group">
-                    <label>PDF Attachment (optional)</label>
+                    <label>Attachment (optional)</label>
                     <FileDropZone
-                      accept=".pdf"
+                      accept=".pdf,.doc,.docx,.png,.jpg,.jpeg,.gif,.webp"
                       file={pdfFile}
                       onFile={setPdfFile}
                       onRemove={() => { setPdfFile(null); setExistingPdf(null); }}
-                      label={existingPdf ? `Current: ${existingPdf.name}` : 'Upload PDF'}
-                      hint="PDF files only"
+                      label={existingPdf ? `Current: ${existingPdf.name}` : 'Upload file'}
+                      hint="PDF, Word (.doc/.docx), or image (PNG, JPG, GIF, WEBP)"
                     />
                     {existingPdf && !pdfFile && (
                       <div style={{ display: 'flex', alignItems: 'center', gap: 8, marginTop: 4, fontSize: 12 }}>
