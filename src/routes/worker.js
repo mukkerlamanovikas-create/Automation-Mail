@@ -199,7 +199,18 @@ async function processQueue(req, res) {
     await sleep(getGap());
   }
 
-  res.json({ success: true, processed: totalProcessed, daily_sent: sent_today + totalProcessed, daily_limit: DAILY_LIMIT });
+  const totalSentToday = sent_today + totalProcessed;
+
+  // If we hit the batch cap and there's still daily capacity, fire the next batch immediately.
+  // This self-chains until all pending emails are sent or the 400/day limit is reached —
+  // no external cron needed beyond the single 9 AM trigger.
+  const shouldChain = totalProcessed >= MAX_BATCH && totalSentToday < DAILY_LIMIT;
+  if (shouldChain && process.env.APP_URL && process.env.WORKER_SECRET) {
+    const nextUrl = `${process.env.APP_URL}/api/worker/process?secret=${process.env.WORKER_SECRET}`;
+    fetch(nextUrl).catch(() => {}); // fire and forget — don't await
+  }
+
+  res.json({ success: true, processed: totalProcessed, daily_sent: totalSentToday, daily_limit: DAILY_LIMIT, chained: shouldChain });
 }
 
 router.get('/process', processQueue);
