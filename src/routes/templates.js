@@ -92,6 +92,10 @@ router.put('/:id', async (req, res, next) => {
 router.delete('/:id', async (req, res, next) => {
   try {
     const sql = getDb();
+    const [used] = await sql`SELECT COUNT(*)::int AS cnt FROM campaigns WHERE template_id = ${req.params.id}`;
+    if (used.cnt > 0) {
+      return res.status(409).json({ success: false, error: `Cannot delete — ${used.cnt} campaign(s) use this template. Delete those campaigns first.` });
+    }
     const rows = await sql`DELETE FROM email_templates WHERE id = ${req.params.id} AND user_id = ${req.user.id} RETURNING id`;
     if (!rows[0]) return res.status(404).json({ success: false, error: 'Template not found' });
     res.json({ success: true });
