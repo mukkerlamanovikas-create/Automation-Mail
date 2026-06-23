@@ -11,8 +11,9 @@ const workerRoutes = require('./routes/worker');
 
 const app = express();
 
-app.use(cors());
+app.use(cors({ origin: process.env.APP_URL || true }));
 app.use(express.json({ limit: '10mb' })); // 10mb for base64 PDF payloads
+app.use((req, _res, next) => { console.log('[req]', req.method, req.path); next(); });
 
 app.get('/api/health', (_req, res) => res.json({ status: 'ok', ts: Date.now() }));
 
