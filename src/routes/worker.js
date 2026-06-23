@@ -5,8 +5,8 @@ const { sendMail, createTransporter } = require('../lib/mailer');
 
 const router = express.Router();
 
-const DAILY_LIMIT = 400;
-// 35 emails × 8s = 280s — stays within Vercel's 300s function timeout
+const DAILY_LIMIT = 400;  // max emails sent per day across all accounts
+// 35 emails × 8s = 280s — stays within Vercel's 300s function timeout per invocation
 const MAX_BATCH = parseInt(process.env.WORKER_BATCH_SIZE || '35', 10);
 // 8-second gap between sends; set WORKER_GAP_MS=0 in test environments to skip
 const getGap = () => parseInt(process.env.WORKER_GAP_MS || '8000', 10);
@@ -31,15 +31,29 @@ async function processQueue(req, res) {
 
   const sql = getDb();
 
-  // Reset any rows left in 'processing' from a previous crashed invocation.
-  // Safe because only one worker runs at a time (hourly cron, <300s execution).
-  await sql`UPDATE campaign_recipients SET status = 'pending' WHERE status = 'processing'`;
+  // How many emails have already been sent today (across all accounts)?
+  const [{ sent_today }] = await sql`
+    SELECT COALESCE(SUM(sent_count), 0)::int AS sent_today
+    FROM daily_email_counts
+    WHERE date = CURRENT_DATE
+  `;
+  if (sent_today >= DAILY_LIMIT) {
+    return res.json({ success: true, processed: 0, message: `Daily limit of ${DAILY_LIMIT} already reached` });
+  }
+
+  // Only reset stale 'processing' rows (> 10 min old) — avoids clobbering a concurrent run
+  await sql`
+    UPDATE campaign_recipients SET status = 'pending'
+    WHERE status = 'processing' AND queued_at < NOW() - INTERVAL '10 minutes'
+  `;
 
   // Cache credentials and templates per invocation to avoid repeated DB round-trips
   const credCache = new Map();
   const tmplCache = new Map();
   const transporterCache = new Map();
   let totalProcessed = 0;
+  // Don't exceed the daily cap even across multiple concurrent invocations
+  const batchCap = Math.min(MAX_BATCH, DAILY_LIMIT - sent_today);
 
   // Keep pulling the next pending email until none remain
   while (true) {
@@ -68,7 +82,7 @@ async function processQueue(req, res) {
       LIMIT 1
     `;
 
-    if (!row || totalProcessed >= MAX_BATCH) break;
+    if (!row || totalProcessed >= batchCap) break;
 
     // Atomically claim it so a parallel invocation can't double-send
     const [claimed] = await sql`
@@ -185,7 +199,7 @@ async function processQueue(req, res) {
     await sleep(getGap());
   }
 
-  res.json({ success: true, processed: totalProcessed });
+  res.json({ success: true, processed: totalProcessed, daily_sent: sent_today + totalProcessed, daily_limit: DAILY_LIMIT });
 }
 
 router.get('/process', processQueue);
