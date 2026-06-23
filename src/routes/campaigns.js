@@ -72,6 +72,18 @@ router.post('/', async (req, res, next) => {
       FROM unnest(${names}::text[], ${emails}::text[]) AS t(name, email)
     `;
 
+    // Kick off the worker immediately so sending starts right away (up to 400/day limit).
+    // We await with a short timeout so the worker invocation is guaranteed to start
+    // before this function returns and Vercel freezes the process.
+    if (process.env.APP_URL && process.env.WORKER_SECRET) {
+      const ctrl = new AbortController();
+      setTimeout(() => ctrl.abort(), 3000);
+      await fetch(
+        `${process.env.APP_URL}/api/worker/process?secret=${process.env.WORKER_SECRET}`,
+        { signal: ctrl.signal }
+      ).catch(() => {});
+    }
+
     res.status(201).json({ success: true, campaign });
   } catch (err) { next(err); }
 });
