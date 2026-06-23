@@ -91,7 +91,7 @@ export default function CampaignWizard({ gmailAccounts, templates, preSelectedTe
                       <div style={{ fontWeight: 700, fontSize: 14 }}>{a.label}</div>
                       <div style={{ fontSize: 12, color: 'var(--text-muted)' }}>{a.email}</div>
                       <div style={{ fontSize: 11, marginTop: 4, color: 'var(--text-muted)' }}>
-                        {350 - (a.today_sent || 0)} emails remaining today
+                        {400 - (a.today_sent || 0)} emails remaining today
                       </div>
                     </div>
                   ))}
@@ -139,7 +139,7 @@ export default function CampaignWizard({ gmailAccounts, templates, preSelectedTe
               <div className="summary-row"><span className="summary-key">Recipients</span><span className="summary-val">{recipients?.recipients?.length || 0}</span></div>
               <div className="summary-row">
                 <span className="summary-key">Estimated Time</span>
-                <span className="summary-val">~{estimated} minutes (at 8s/email via hourly cron)</span>
+                <span className="summary-val">~{estimated} minutes (8s per email, sends automatically)</span>
               </div>
             </div>
             <div style={{ marginTop: 20, textAlign: 'center' }}>
