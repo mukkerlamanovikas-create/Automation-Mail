@@ -6,7 +6,7 @@ const NAV = [
   { icon: '📧', label: 'Gmail Accounts', to: '/gmail-accounts' },
   { icon: '📄', label: 'Templates', to: '/templates' },
   { icon: '🚀', label: 'New Campaign', to: '/campaigns/new' },
-  { icon: '📋', label: 'Campaign History', to: '/campaigns' },
+  { icon: '📋', label: 'Campaign History', to: '/campaigns', end: true },
   { icon: '🔒', label: 'Change Password', to: '/change-password' },
 ];
 
