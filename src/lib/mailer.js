@@ -2,14 +2,19 @@ const nodemailer = require('nodemailer');
 
 const EMAIL_RE = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
 
-// Neon's HTTP driver returns BYTEA as a hex string (\x89504e47...) not a Buffer
+// Neon returns BYTEA in various formats depending on transport; handle all of them
 function toBuffer(data) {
   if (!data) return null;
   if (Buffer.isBuffer(data)) return data;
   if (data instanceof Uint8Array) return Buffer.from(data);
   if (typeof data === 'string') {
+    // Neon HTTP mode: hex-encoded with \x prefix
     if (data.startsWith('\\x')) return Buffer.from(data.slice(2), 'hex');
-    return Buffer.from(data, 'base64'); // fallback
+    return Buffer.from(data, 'base64');
+  }
+  // Neon may deserialise BYTEA as {data: number[]} (a serialised Buffer/Uint8Array)
+  if (data && typeof data === 'object' && Array.isArray(data.data)) {
+    return Buffer.from(data.data);
   }
   return Buffer.from(data);
 }
