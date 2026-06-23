@@ -5,10 +5,10 @@ const { sendMail, createTransporter } = require('../lib/mailer');
 
 const router = express.Router();
 
-const DAILY_LIMIT = 350;
-// Cap per invocation: 10 emails × 8s = 80s, well within Vercel's 300s max
-const MAX_BATCH = parseInt(process.env.WORKER_BATCH_SIZE || '10', 10);
-// Default 8-second gap; set WORKER_GAP_MS=0 in test environments to skip the wait
+const DAILY_LIMIT = 400;
+// 35 emails × 8s = 280s — stays within Vercel's 300s function timeout
+const MAX_BATCH = parseInt(process.env.WORKER_BATCH_SIZE || '35', 10);
+// 8-second gap between sends; set WORKER_GAP_MS=0 in test environments to skip
 const getGap = () => parseInt(process.env.WORKER_GAP_MS || '8000', 10);
 
 const sleep = ms => new Promise(r => setTimeout(r, ms));
