@@ -14,17 +14,21 @@ function toHtml(text) {
   }</div>`;
 }
 
-async function sendMail({ fromEmail, fromPassword, to, toName, subject, bodyTemplate, pdfBuffer, pdfFilename }) {
+function createTransporter(fromEmail, fromPassword) {
+  return nodemailer.createTransport({
+    service: 'gmail',
+    auth: { user: fromEmail, pass: fromPassword },
+  });
+}
+
+async function sendMail({ fromEmail, fromPassword, to, toName, subject, bodyTemplate, pdfBuffer, pdfFilename, transporter }) {
   if (!EMAIL_RE.test(fromEmail)) throw new Error('Invalid sender email');
   if (!EMAIL_RE.test(to)) throw new Error(`Invalid recipient email: ${to}`);
 
   const text = personalise(bodyTemplate, toName, to);
   const html = toHtml(text);
 
-  const transporter = nodemailer.createTransport({
-    service: 'gmail',
-    auth: { user: fromEmail, pass: fromPassword },
-  });
+  if (!transporter) transporter = createTransporter(fromEmail, fromPassword);
 
   const mailOptions = {
     from: `"Email Automation" <${fromEmail}>`,
@@ -45,4 +49,4 @@ async function sendMail({ fromEmail, fromPassword, to, toName, subject, bodyTemp
   await transporter.sendMail(mailOptions);
 }
 
-module.exports = { sendMail };
+module.exports = { sendMail, createTransporter };

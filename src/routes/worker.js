@@ -1,11 +1,13 @@
 const express = require('express');
 const { getDb } = require('../db');
 const { decrypt } = require('../lib/crypto');
-const { sendMail } = require('../lib/mailer');
+const { sendMail, createTransporter } = require('../lib/mailer');
 
 const router = express.Router();
 
 const DAILY_LIMIT = 350;
+// Cap per invocation: 10 emails × 8s = 80s, well within Vercel's 300s max
+const MAX_BATCH = parseInt(process.env.WORKER_BATCH_SIZE || '10', 10);
 // Default 8-second gap; set WORKER_GAP_MS=0 in test environments to skip the wait
 const getGap = () => parseInt(process.env.WORKER_GAP_MS || '8000', 10);
 
@@ -29,15 +31,14 @@ async function processQueue(req, res) {
 
   const sql = getDb();
 
-  // Release any rows stuck in 'processing' for more than 5 minutes
-  await sql`
-    UPDATE campaign_recipients SET status = 'pending'
-    WHERE status = 'processing' AND queued_at < NOW() - INTERVAL '5 minutes'
-  `;
+  // Reset any rows left in 'processing' from a previous crashed invocation.
+  // Safe because only one worker runs at a time (hourly cron, <300s execution).
+  await sql`UPDATE campaign_recipients SET status = 'pending' WHERE status = 'processing'`;
 
   // Cache credentials and templates per invocation to avoid repeated DB round-trips
   const credCache = new Map();
   const tmplCache = new Map();
+  const transporterCache = new Map();
   let totalProcessed = 0;
 
   // Keep pulling the next pending email until none remain
@@ -67,7 +68,7 @@ async function processQueue(req, res) {
       LIMIT 1
     `;
 
-    if (!row) break; // nothing left to send today
+    if (!row || totalProcessed >= MAX_BATCH) break;
 
     // Atomically claim it so a parallel invocation can't double-send
     const [claimed] = await sql`
@@ -90,6 +91,7 @@ async function processQueue(req, res) {
       try {
         const gmailPassword = decrypt({ ciphertext: acct.encrypted_password, iv: acct.iv, authTag: acct.auth_tag });
         credCache.set(row.gmail_account_id, { gmailEmail: acct.email, gmailPassword });
+        transporterCache.set(row.gmail_account_id, createTransporter(acct.email, gmailPassword));
       } catch {
         await sql`UPDATE campaign_recipients SET status = 'pending' WHERE id = ${row.recipient_id}`;
         break;
@@ -127,6 +129,7 @@ async function processQueue(req, res) {
         bodyTemplate: body,
         pdfBuffer,
         pdfFilename,
+        transporter: transporterCache.get(row.gmail_account_id),
       });
 
       // On success: delete recipient row immediately (don't retain email address)
