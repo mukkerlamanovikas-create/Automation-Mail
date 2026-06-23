@@ -11,7 +11,7 @@ function fmt(dt) {
   return new Date(dt).toLocaleDateString('en-IN', { day: 'numeric', month: 'short', year: 'numeric' });
 }
 
-export default function CampaignRow({ campaign, onPause, onResume }) {
+export default function CampaignRow({ campaign, onPause, onResume, onTrigger }) {
   const total = campaign.total_recipients || 0;
   const sent = campaign.sent_count || 0;
   const pct = total > 0 ? Math.round((sent / total) * 100) : 0;
@@ -31,12 +31,15 @@ export default function CampaignRow({ campaign, onPause, onResume }) {
         </div>
       </td>
       <td style={{ fontSize: 12, color: 'var(--text-muted)' }}>{fmt(campaign.created_at)}</td>
-      <td>
+      <td style={{ display: 'flex', gap: 6, flexWrap: 'wrap' }}>
+        {campaign.status === 'active' && campaign.pending_count > 0 && (
+          <button className="btn btn-primary" style={{ fontSize: 11, padding: '3px 10px' }} onClick={() => onTrigger(campaign)}>▶ Send Now</button>
+        )}
         {campaign.status === 'active' && (
           <button className="btn btn-secondary" style={{ fontSize: 11, padding: '3px 10px' }} onClick={() => onPause(campaign)}>Pause</button>
         )}
         {campaign.status === 'paused' && (
-          <button className="btn btn-primary" style={{ fontSize: 11, padding: '3px 10px' }} onClick={() => onResume(campaign)}>Resume</button>
+          <button className="btn btn-primary" style={{ fontSize: 11, padding: '3px 10px' }} onClick={() => onResume(campaign)}>▶ Resume</button>
         )}
       </td>
     </tr>

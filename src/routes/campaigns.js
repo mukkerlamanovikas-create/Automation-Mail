@@ -131,7 +131,35 @@ router.post('/:id/resume', async (req, res, next) => {
       RETURNING id, status
     `;
     if (!rows[0]) return res.status(404).json({ success: false, error: 'Campaign not found or not paused' });
+    // Kick the worker so sending resumes immediately
+    if (process.env.APP_URL && process.env.WORKER_SECRET) {
+      const ctrl = new AbortController();
+      setTimeout(() => ctrl.abort(), 3000);
+      fetch(`${process.env.APP_URL}/api/worker/process?secret=${process.env.WORKER_SECRET}`, { signal: ctrl.signal }).catch(() => {});
+    }
     res.json({ success: true, campaign: rows[0] });
+  } catch (err) { next(err); }
+});
+
+// POST /api/campaigns/:id/trigger  — re-fire worker for a stuck active campaign
+router.post('/:id/trigger', async (req, res, next) => {
+  try {
+    const sql = getDb();
+    const [camp] = await sql`
+      SELECT id, status, pending_count FROM campaigns
+      WHERE id = ${req.params.id} AND user_id = ${req.user.id}
+    `;
+    if (!camp) return res.status(404).json({ success: false, error: 'Campaign not found' });
+    if (camp.status !== 'active') return res.status(400).json({ success: false, error: 'Campaign is not active' });
+    if (camp.pending_count === 0) return res.status(400).json({ success: false, error: 'No pending recipients — campaign is already done' });
+
+    if (!process.env.APP_URL || !process.env.WORKER_SECRET) {
+      return res.status(503).json({ success: false, error: 'Worker not configured' });
+    }
+    const ctrl = new AbortController();
+    setTimeout(() => ctrl.abort(), 5000);
+    await fetch(`${process.env.APP_URL}/api/worker/process?secret=${process.env.WORKER_SECRET}`, { signal: ctrl.signal }).catch(() => {});
+    res.json({ success: true, message: 'Worker triggered — sending will resume shortly' });
   } catch (err) { next(err); }
 });
 

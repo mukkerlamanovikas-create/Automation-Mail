@@ -36,10 +36,19 @@ export default function CampaignHistoryPage() {
   const handleResume = async c => {
     try {
       await client.post(`/api/campaigns/${c.id}/resume`);
-      toast.success(`"${c.name}" resumed`);
+      toast.success(`"${c.name}" resumed — sending will start shortly`);
       load();
     } catch (err) {
       toast.error(err.response?.data?.error || 'Failed to resume');
+    }
+  };
+
+  const handleTrigger = async c => {
+    try {
+      await client.post(`/api/campaigns/${c.id}/trigger`);
+      toast.success(`Worker triggered — "${c.name}" sending resumed`);
+    } catch (err) {
+      toast.error(err.response?.data?.error || 'Failed to trigger worker');
     }
   };
 
