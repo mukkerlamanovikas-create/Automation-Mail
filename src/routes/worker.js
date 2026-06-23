@@ -115,7 +115,7 @@ async function processQueue(req, res) {
     // Load template with PDF data (cached per template for this run)
     if (!tmplCache.has(row.template_id)) {
       const [tmpl] = await sql`
-        SELECT subject, body, pdf_data, pdf_filename
+        SELECT subject, body, encode(pdf_data, 'base64') AS pdf_b64, pdf_filename
         FROM email_templates WHERE id = ${row.template_id}
       `;
       if (!tmpl) {
@@ -125,7 +125,7 @@ async function processQueue(req, res) {
       tmplCache.set(row.template_id, {
         subject: tmpl.subject,
         body: tmpl.body,
-        pdfBuffer: tmpl.pdf_data || null,
+        pdfBuffer: tmpl.pdf_b64 ? Buffer.from(tmpl.pdf_b64, 'base64') : null,
         pdfFilename: tmpl.pdf_filename,
       });
     }

@@ -27,13 +27,18 @@ router.post('/', async (req, res, next) => {
       return res.status(400).json({ success: false, error: 'name, subject, and body are required' });
     }
 
-    const pdfBuffer = pdf_data ? Buffer.from(pdf_data, 'base64') : null;
     const sql = getDb();
-    const rows = await sql`
-      INSERT INTO email_templates (user_id, name, subject, body, pdf_data, pdf_filename)
-      VALUES (${req.user.id}, ${name}, ${subject}, ${body}, ${pdfBuffer}, ${pdf_filename || null})
-      RETURNING id, name, subject, pdf_filename, is_default, created_at, updated_at
-    `;
+    const rows = pdf_data
+      ? await sql`
+          INSERT INTO email_templates (user_id, name, subject, body, pdf_data, pdf_filename)
+          VALUES (${req.user.id}, ${name}, ${subject}, ${body}, decode(${pdf_data}, 'base64'), ${pdf_filename || null})
+          RETURNING id, name, subject, pdf_filename, is_default, created_at, updated_at
+        `
+      : await sql`
+          INSERT INTO email_templates (user_id, name, subject, body, pdf_data, pdf_filename)
+          VALUES (${req.user.id}, ${name}, ${subject}, ${body}, NULL, ${pdf_filename || null})
+          RETURNING id, name, subject, pdf_filename, is_default, created_at, updated_at
+        `;
     res.status(201).json({ success: true, template: rows[0] });
   } catch (err) { next(err); }
 });
@@ -43,19 +48,13 @@ router.get('/:id', async (req, res, next) => {
   try {
     const sql = getDb();
     const rows = await sql`
-      SELECT id, name, subject, body, pdf_data, pdf_filename, is_default, created_at, updated_at
+      SELECT id, name, subject, body, encode(pdf_data, 'base64') AS pdf_data,
+             pdf_filename, is_default, created_at, updated_at
       FROM email_templates WHERE id = ${req.params.id} AND user_id = ${req.user.id}
     `;
     if (!rows[0]) return res.status(404).json({ success: false, error: 'Template not found' });
 
-    const t = rows[0];
-    res.json({
-      success: true,
-      data: {
-        ...t,
-        pdf_data: t.pdf_data ? Buffer.from(t.pdf_data).toString('base64') : null,
-      },
-    });
+    res.json({ success: true, data: rows[0] });
   } catch (err) { next(err); }
 });
 
@@ -67,16 +66,24 @@ router.put('/:id', async (req, res, next) => {
     if (!exists[0]) return res.status(404).json({ success: false, error: 'Template not found' });
 
     const { name, subject, body, pdf_data, pdf_filename } = req.body;
-    const pdfBuffer = pdf_data ? Buffer.from(pdf_data, 'base64') : null;
 
-    const rows = await sql`
-      UPDATE email_templates
-      SET name = ${name}, subject = ${subject}, body = ${body},
-          pdf_data = ${pdfBuffer}, pdf_filename = ${pdf_filename || null},
-          updated_at = NOW()
-      WHERE id = ${req.params.id}
-      RETURNING id, name, subject, pdf_filename, is_default, created_at, updated_at
-    `;
+    const rows = pdf_data
+      ? await sql`
+          UPDATE email_templates
+          SET name = ${name}, subject = ${subject}, body = ${body},
+              pdf_data = decode(${pdf_data}, 'base64'), pdf_filename = ${pdf_filename || null},
+              updated_at = NOW()
+          WHERE id = ${req.params.id}
+          RETURNING id, name, subject, pdf_filename, is_default, created_at, updated_at
+        `
+      : await sql`
+          UPDATE email_templates
+          SET name = ${name}, subject = ${subject}, body = ${body},
+              pdf_data = NULL, pdf_filename = ${pdf_filename || null},
+              updated_at = NOW()
+          WHERE id = ${req.params.id}
+          RETURNING id, name, subject, pdf_filename, is_default, created_at, updated_at
+        `;
     res.json({ success: true, template: rows[0] });
   } catch (err) { next(err); }
 });
