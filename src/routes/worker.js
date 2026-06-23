@@ -201,13 +201,17 @@ async function processQueue(req, res) {
 
   const totalSentToday = sent_today + totalProcessed;
 
-  // If we hit the batch cap and there's still daily capacity, fire the next batch immediately.
-  // This self-chains until all pending emails are sent or the 400/day limit is reached —
-  // no external cron needed beyond the single 9 AM trigger.
+  // If we hit the batch cap and there's still daily capacity, kick off the next batch.
+  // We await with a short timeout so the next invocation is actually running before this
+  // function returns — fire-and-forget is unreliable because Vercel freezes the process
+  // immediately after res.json() is sent.
   const shouldChain = totalProcessed >= MAX_BATCH && totalSentToday < DAILY_LIMIT;
   if (shouldChain && process.env.APP_URL && process.env.WORKER_SECRET) {
     const nextUrl = `${process.env.APP_URL}/api/worker/process?secret=${process.env.WORKER_SECRET}`;
-    fetch(nextUrl).catch(() => {}); // fire and forget — don't await
+    const ctrl = new AbortController();
+    const t = setTimeout(() => ctrl.abort(), 5000); // abort after 5s if no response yet
+    await fetch(nextUrl, { signal: ctrl.signal }).catch(() => {});
+    clearTimeout(t);
   }
 
   res.json({ success: true, processed: totalProcessed, daily_sent: totalSentToday, daily_limit: DAILY_LIMIT, chained: shouldChain });
