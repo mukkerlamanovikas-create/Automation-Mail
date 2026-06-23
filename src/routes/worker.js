@@ -6,8 +6,8 @@ const { sendMail, createTransporter } = require('../lib/mailer');
 const router = express.Router();
 
 const DAILY_LIMIT = parseInt(process.env.DAILY_LIMIT || '400', 10);
-// 35 emails × 8s = 280s — stays within Vercel's 300s function timeout per invocation
-const MAX_BATCH = parseInt(process.env.WORKER_BATCH_SIZE || '35', 10);
+// 20 emails × (8s send + ~2s Neon overhead) = ~200s — well within Vercel's 300s limit
+const MAX_BATCH = parseInt(process.env.WORKER_BATCH_SIZE || '20', 10);
 // 8-second gap between sends; set WORKER_GAP_MS=0 in test environments to skip
 const getGap = () => parseInt(process.env.WORKER_GAP_MS || '8000', 10);
 
